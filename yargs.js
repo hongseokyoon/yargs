@@ -11,11 +11,14 @@ const Y18n = require('y18n')
 const objFilter = require('./lib/obj-filter')
 const setBlocking = require('set-blocking')
 const applyExtends = require('./lib/apply-extends')
-const { globalMiddlewareFactory } = require('./lib/middleware')
+const {
+  globalMiddlewareFactory
+} = require('./lib/middleware')
 const YError = require('./lib/yerror')
 
 exports = module.exports = Yargs
-function Yargs (processArgs, cwd, parentRequire) {
+
+function Yargs(processArgs, cwd, parentRequire) {
   processArgs = processArgs || [] // handle calling yargs().
 
   const self = {}
@@ -66,14 +69,19 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   // use context object to keep track of resets, subcommand execution, etc
   // submodules should modify and check the state of context as necessary
-  const context = { resets: -1, commands: [], fullCommands: [], files: [] }
+  const context = {
+    resets: -1,
+    commands: [],
+    fullCommands: [],
+    files: []
+  }
   self.getContext = () => context
 
   // puts yargs back into an initial state. any keys
   // that have been set to "global" will not be reset
   // by this action.
   let options
-  self.resetOptions = self.reset = function resetOptions (aliases) {
+  self.resetOptions = self.reset = function resetOptions(aliases) {
     context.resets++
     aliases = aliases || {}
     options = options || {}
@@ -88,8 +96,8 @@ function Yargs (processArgs, cwd, parentRequire) {
     // we should reset it before passing options to command.
     const localLookup = {}
     tmpOptions.local.forEach((l) => {
-      localLookup[l] = true
-      ;(aliases[l] || []).forEach((a) => {
+      localLookup[l] = true;
+      (aliases[l] || []).forEach((a) => {
         localLookup[a] = true
       })
     })
@@ -146,7 +154,8 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   // temporary hack: allow "freezing" of reset-able state for parse(msg, cb)
   let frozens = []
-  function freeze () {
+
+  function freeze() {
     let frozen = {}
     frozens.push(frozen)
     frozen.options = options
@@ -165,7 +174,8 @@ function Yargs (processArgs, cwd, parentRequire) {
     frozen.parseFn = parseFn
     frozen.parseContext = parseContext
   }
-  function unfreeze () {
+
+  function unfreeze() {
     let frozen = frozens.pop()
     options = frozen.options
     options.configObjects = frozen.configObjects
@@ -232,7 +242,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self
   }
 
-  function populateParserHintArray (type, keys, value) {
+  function populateParserHintArray(type, keys, value) {
     keys = [].concat(keys)
     keys.forEach((key) => {
       options[type].push(key)
@@ -288,7 +298,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self
   }
 
-  function populateParserHintObject (builder, isArray, type, key, value) {
+  function populateParserHintObject(builder, isArray, type, key, value) {
     if (Array.isArray(key)) {
       // an array of keys with one value ['x', 'y', 'z'], function parse () {}
       const temp = {}
@@ -311,7 +321,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     }
   }
 
-  function deleteFromParserHintObject (optionKey) {
+  function deleteFromParserHintObject(optionKey) {
     // delete from all parsing hints:
     // boolean, array, key, alias, etc.
     Object.keys(options).forEach((hintKey) => {
@@ -326,7 +336,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     delete usage.getDescriptions()[optionKey]
   }
 
-  self.config = function config (key, msg, parseFn) {
+  self.config = function config(key, msg, parseFn) {
     argsert('[object|string] [string|function] [function]', [key, msg, parseFn], arguments.length)
     // allow a config object to be provided directly.
     if (typeof key === 'object') {
@@ -342,8 +352,8 @@ function Yargs (processArgs, cwd, parentRequire) {
     }
 
     key = key || 'config'
-    self.describe(key, msg || usage.deferY18nLookup('Path to JSON config file'))
-    ;(Array.isArray(key) ? key : [key]).forEach((k) => {
+    self.describe(key, msg || usage.deferY18nLookup('Path to JSON config file'));
+    (Array.isArray(key) ? key : [key]).forEach((k) => {
       options.config[k] = parseFn || true
     })
 
@@ -371,7 +381,7 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   // TODO: deprecate self.demand in favor of
   // .demandCommand() .demandOption().
-  self.demand = self.required = self.require = function demand (keys, max, msg) {
+  self.demand = self.required = self.require = function demand(keys, max, msg) {
     // you can optionally provide a 'max' key,
     // which will raise an exception if too many '_'
     // options are provided.
@@ -402,7 +412,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self
   }
 
-  self.demandCommand = function demandCommand (min, max, minMsg, maxMsg) {
+  self.demandCommand = function demandCommand(min, max, minMsg, maxMsg) {
     argsert('[number] [number|string] [string|null|undefined] [string|null|undefined]', [min, max, minMsg, maxMsg], arguments.length)
 
     if (typeof min === 'undefined') min = 1
@@ -481,7 +491,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self
   }
 
-  self.global = function global (globals, global) {
+  self.global = function global(globals, global) {
     argsert('<string|array> [boolean]', [globals, global], arguments.length)
     globals = [].concat(globals)
     if (global !== false) {
@@ -494,7 +504,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self
   }
 
-  self.pkgConf = function pkgConf (key, rootPath) {
+  self.pkgConf = function pkgConf(key, rootPath) {
     argsert('<string> [string]', [key, rootPath], arguments.length)
     let conf = null
     // prefer cwd to require-main-filename in this method
@@ -512,7 +522,8 @@ function Yargs (processArgs, cwd, parentRequire) {
   }
 
   const pkgs = {}
-  function pkgUp (rootPath) {
+
+  function pkgUp(rootPath) {
     const npath = rootPath || '*'
     if (pkgs[npath]) return pkgs[npath]
     const findUp = require('find-up')
@@ -540,7 +551,7 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   let parseFn = null
   let parseContext = null
-  self.parse = function parse (args, shortCircuit, _parseFn) {
+  self.parse = function parse(args, shortCircuit, _parseFn) {
     argsert('[string|array] [function|boolean|object] [function]', [args, shortCircuit, _parseFn], arguments.length)
     freeze()
     if (typeof args === 'undefined') {
@@ -581,7 +592,7 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   self._hasParseCallback = () => !!parseFn
 
-  self.option = self.options = function option (key, opt) {
+  self.option = self.options = function option(key, opt) {
     argsert('<string|object> [object]', [key, opt], arguments.length)
     if (typeof key === 'object') {
       Object.keys(key).forEach((k) => {
@@ -704,7 +715,8 @@ function Yargs (processArgs, cwd, parentRequire) {
     // options available to .option().
     const supportedOpts = ['default', 'defaultDescription', 'implies', 'normalize',
       'choices', 'conflicts', 'coerce', 'type', 'describe',
-      'desc', 'description', 'alias']
+      'desc', 'description', 'alias'
+    ]
     opts = objFilter(opts, (k, v) => {
       let accept = supportedOpts.indexOf(k) !== -1
       // type can be one of string|number|boolean.
@@ -731,7 +743,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self.option(key, opts)
   }
 
-  self.group = function group (opts, groupName) {
+  self.group = function group(opts, groupName) {
     argsert('<string|array> <string>', [opts, groupName], arguments.length)
     const existing = preservedGroups[groupName] || groups[groupName]
     if (preservedGroups[groupName]) {
@@ -773,7 +785,7 @@ function Yargs (processArgs, cwd, parentRequire) {
   self.getStrict = () => strict
 
   let parserConfig = {}
-  self.parserConfiguration = function parserConfiguration (config) {
+  self.parserConfiguration = function parserConfiguration(config) {
     argsert('<object>', [config], arguments.length)
     parserConfig = config
     return self
@@ -792,7 +804,7 @@ function Yargs (processArgs, cwd, parentRequire) {
   }
 
   let versionOpt = null
-  self.version = function version (opt, msg, ver) {
+  self.version = function version(opt, msg, ver) {
     const defaultVersionOpt = 'version'
     argsert('[boolean|string] [string] [string]', [opt, msg, ver], arguments.length)
 
@@ -821,20 +833,21 @@ function Yargs (processArgs, cwd, parentRequire) {
     versionOpt = typeof opt === 'string' ? opt : defaultVersionOpt
     msg = msg || usage.deferY18nLookup('Show version number')
 
+    self.ver = ver;
     usage.version(ver || undefined)
     self.boolean(versionOpt)
     self.describe(versionOpt, msg)
     return self
   }
 
-  function guessVersion () {
+  function guessVersion() {
     const obj = pkgUp()
 
     return obj.version || 'unknown'
   }
 
   let helpOpt = null
-  self.addHelpOpt = self.help = function addHelpOpt (opt, msg) {
+  self.addHelpOpt = self.help = function addHelpOpt(opt, msg) {
     const defaultHelpOpt = 'help'
     argsert('[string|boolean] [string]', [opt, msg], arguments.length)
 
@@ -858,7 +871,7 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   const defaultShowHiddenOpt = 'show-hidden'
   options.showHiddenOpt = defaultShowHiddenOpt
-  self.addShowHiddenOpt = self.showHidden = function addShowHiddenOpt (opt, msg) {
+  self.addShowHiddenOpt = self.showHidden = function addShowHiddenOpt(opt, msg) {
     argsert('[string|boolean] [string]', [opt, msg], arguments.length)
 
     if (arguments.length === 1) {
@@ -872,13 +885,13 @@ function Yargs (processArgs, cwd, parentRequire) {
     return self
   }
 
-  self.hide = function hide (key) {
+  self.hide = function hide(key) {
     argsert('<string|object>', [key], arguments.length)
     options.hiddenOptions.push(key)
     return self
   }
 
-  self.showHelpOnFail = function showHelpOnFail (enabled, message) {
+  self.showHelpOnFail = function showHelpOnFail(enabled, message) {
     argsert('[boolean|string] [string]', [enabled, message], arguments.length)
     usage.showHelpOnFail(enabled, message)
     return self
@@ -971,7 +984,7 @@ function Yargs (processArgs, cwd, parentRequire) {
   // we use a custom logger that buffers output,
   // so that we can print to non-CLIs, e.g., chat-bots.
   const _logger = {
-    log () {
+    log() {
       const args = []
       for (let i = 0; i < arguments.length; i++) args.push(arguments[i])
       if (!self._hasParseCallback()) console.log.apply(console, args)
@@ -979,7 +992,7 @@ function Yargs (processArgs, cwd, parentRequire) {
       if (output.length) output += '\n'
       output += args.join(' ')
     },
-    error () {
+    error() {
       const args = []
       for (let i = 0; i < arguments.length; i++) args.push(arguments[i])
       if (!self._hasParseCallback()) console.error.apply(console, args)
@@ -1020,7 +1033,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     enumerable: true
   })
 
-  self._parseArgs = function parseArgs (args, shortCircuit, _skipValidation, commandIndex) {
+  self._parseArgs = function parseArgs(args, shortCircuit, _skipValidation, commandIndex) {
     let skipValidation = !!_skipValidation
     args = args || processArgs
 
@@ -1120,7 +1133,8 @@ function Yargs (processArgs, cwd, parentRequire) {
         // e.g., loading in a list of commands from an API.
         const completionArgs = args.slice(args.indexOf(`--${completion.completionKey}`) + 1)
         completion.getCompletion(completionArgs, (completions) => {
-          ;(completions || []).forEach((completion) => {
+          ;
+          (completions || []).forEach((completion) => {
             _logger.log(completion)
           })
 
@@ -1173,7 +1187,7 @@ function Yargs (processArgs, cwd, parentRequire) {
     return argv
   }
 
-  self._runValidation = function runValidation (argv, aliases, positionalMap, parseErrors) {
+  self._runValidation = function runValidation(argv, aliases, positionalMap, parseErrors) {
     if (parseErrors) throw new YError(parseErrors.message || parseErrors)
     validation.nonOptionCount(argv)
     validation.requiredArguments(argv)
@@ -1184,11 +1198,13 @@ function Yargs (processArgs, cwd, parentRequire) {
     validation.conflicting(argv)
   }
 
-  function guessLocale () {
+  function guessLocale() {
     if (!detectLocale) return
 
     try {
-      const { env } = process
+      const {
+        env
+      } = process
       const locale = env.LC_ALL || env.LC_MESSAGES || env.LANG || env.LANGUAGE || 'en_US'
       self.locale(locale.replace(/[.:].*/, ''))
     } catch (err) {
@@ -1208,6 +1224,7 @@ function Yargs (processArgs, cwd, parentRequire) {
 // rebase an absolute path to a relative one with respect to a base directory
 // exported for tests
 exports.rebase = rebase
-function rebase (base, dir) {
+
+function rebase(base, dir) {
   return path.relative(base, dir)
 }
